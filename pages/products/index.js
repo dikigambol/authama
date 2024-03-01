@@ -33,7 +33,9 @@ export default function Proucts() {
                                 <input className="form-control" />
                             </div>
                             <div className="col-lg-12 mt-4">
-                                <button className="btn btn-indigo btn-with-icon mb-4"><i className="typcn typcn-document-text" /> Add Product</button>
+                                <button className="btn btn-indigo btn-with-icon mb-4" data-toggle="modal" data-target="#products-modal">
+                                    <i className="typcn typcn-document-text" /> Add Product
+                                </button>
                                 <div className="table-responsive mt-1">
                                     <table className="table table-hover mg-b-0">
                                         <thead>
@@ -69,6 +71,53 @@ export default function Proucts() {
                                     </table>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* product modal  */}
+            <div id="products-modal" className="modal" tabIndex={-1} role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                <div className="modal-dialog modal-lg">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title" id="exampleModalLabel">Products Form</h5>
+                            <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <form>
+                                <div className="row">
+                                    <div className="col-lg-12">
+                                        <div className="form-group">
+                                            <label className="col-form-label">Product Name:</label>
+                                            <input type="text" className="form-control" />
+                                        </div>
+                                    </div>
+                                    <div className="col-lg-12">
+                                        <div className="form-group">
+                                            <label className="col-form-label">Description:</label>
+                                            <textarea className="form-control" />
+                                        </div>
+                                    </div>
+                                    <div className="col-lg-6">
+                                        <div className="form-group">
+                                            <label className="col-form-label">Stock Keeping Unit:</label>
+                                            <input type="text" className="form-control" />
+                                        </div>
+                                    </div>
+                                    <div className="col-lg-6">
+                                        <div className="form-group">
+                                            <label className="col-form-label">Batch Code:</label>
+                                            <input type="text" className="form-control" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-indigo">Save</button>
                         </div>
                     </div>
                 </div>
