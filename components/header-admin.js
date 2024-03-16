@@ -1,10 +1,13 @@
+import { deleteCookies, getToken } from "@/utils/configToken";
 import Link from "next/link";
+import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-export default function HeaderAdmin({href}) {
-    const [burgerMenu, setBurgerMenu] = useState("");
-    const [akunMenu, setAkunMenu] = useState("");
+export default function HeaderAdmin({ href }) {
+    const [burgerMenu, setBurgerMenu] = useState("")
+    const [akunMenu, setAkunMenu] = useState("")
+    const userdata = jwtDecode(getToken())
 
     const router = useRouter();
 
@@ -17,6 +20,7 @@ export default function HeaderAdmin({href}) {
     };
 
     useEffect(() => {
+
         const handleClickOutsideMenu = (event) => {
             const akunArea = document.getElementById('akun-az-menu');
             if (akunArea && !akunArea.contains(event.target)) {
@@ -31,6 +35,11 @@ export default function HeaderAdmin({href}) {
             document.removeEventListener('touchstart', handleClickOutsideMenu);
         };
     }, []);
+
+    function Logout() {
+        deleteCookies()
+        window.location.replace('/login')
+    }
 
     return (
         <div className="az-header">
@@ -65,10 +74,10 @@ export default function HeaderAdmin({href}) {
                                 </a>
                             </div>
                             <div className="az-header-profile">
-                                <h6>Aziana Pechon</h6>
-                                <span>Dosen FTD</span>
+                                <h6>{userdata.username}</h6>
+                                <span>{userdata.email}</span>
                             </div>
-                            <Link href="" className="dropdown-item"><i className="typcn typcn-power-outline" /> Sign Out</Link>
+                            <a href="#" className="dropdown-item" onClick={Logout}><i className="typcn typcn-power-outline" /> Sign Out</a>
                         </div>
                     </div>
                 </div>
