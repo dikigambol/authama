@@ -4,7 +4,6 @@ import { addProduct, deleteProduct, editProduct, isAuth, listProducts } from "@/
 import { getToken } from "@/utils/configToken";
 import { jwtDecode } from "jwt-decode";
 import { failedAlert, successAlert } from "@/utils/alertSwal";
-import TableView from "@/components/tables";
 
 const today = new Date();
 // random string hanya sementara sampai api blockchain ready 
