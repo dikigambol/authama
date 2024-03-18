@@ -1,7 +1,7 @@
 import { login } from "@/lib/axios";
 import { getToken, setToken } from "@/utils/configToken";
 import { Fragment, useEffect, useState } from "react";
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
 
 export default function Login() {
     const [email, setEmail] = useState("")
@@ -19,11 +19,10 @@ export default function Login() {
                 setToken("jwt", res.token)
                 window.location.replace("/dashboard")
             } else {
-
                 Swal.fire({
                     position: "top-end",
-                    title: '<p style="font-size: 20px; color: #c24f4f; margin-bottom: 0px; margin-top: 1px">' + 
-                    "<i class='typcn typcn-info-large'></i>" + res.message +'</p>',
+                    title: '<p style="font-size: 20px; color: #c24f4f; margin-bottom: 0px; margin-top: 1px">' +
+                        "<i class='typcn typcn-info-large'></i>" + res.message + '</p>',
                     showConfirmButton: false,
                     timer: 1500,
                     customClass: {

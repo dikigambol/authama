@@ -1,19 +1,119 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import HeaderAdmin from "../../components/header-admin";
-import { isAuth } from "@/lib/axios";
+import { addProduct, deleteProduct, editProduct, isAuth, listProducts } from "@/lib/axios";
 import { getToken } from "@/utils/configToken";
+import { jwtDecode } from "jwt-decode";
+import { failedAlert, successAlert } from "@/utils/alertSwal";
+import TableView from "@/components/tables";
+
+const today = new Date();
+// random string hanya sementara sampai api blockchain ready 
+const randomString = today.getTime().toString(36) + Math.random().toString(36).substr(2);
+
+const initialStateForm = {
+    products_name: "",
+    description: "",
+    sku: "",
+    id_trx: randomString,
+    batch_code: "",
+    id_writer: "",
+    created_at: today.toISOString().slice(0, 10)
+}
 
 export default function Proucts() {
+    const [list, setList] = useState([])
+    const [form, setForm] = useState(initialStateForm)
     const [authenticated, setAuthenticated] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [isEdit, setIsEdit] = useState(false)
+
+    const modal = useRef(null)
+
+    async function fetchListProduct(id, token) {
+        const res = await listProducts(id, token)
+        if (res) {
+            setList(res)
+        }
+    }
 
     useEffect(() => {
         let token = getToken();
+        const userdata = jwtDecode(token)
         async function checkAuth() {
             const res = await isAuth(token);
             setAuthenticated(res);
         }
         checkAuth();
+        fetchListProduct(userdata.id, token)
+        setForm({
+            ...form,
+            id_writer: userdata.id
+        })
     }, []);
+
+    function formHandler(e) {
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value
+        })
+    }
+
+    async function postProduct(e) {
+        e.preventDefault()
+        let token = getToken();
+        const userdata = jwtDecode(token)
+        setLoading(true)
+        if (!isEdit) {
+            const res = await addProduct(form, token)
+            if (res.status) {
+                successAlert()
+                modal.current.click();
+                setForm(initialStateForm)
+                setLoading(false)
+                fetchListProduct(userdata.id, token)
+            } else {
+                failedAlert()
+                modal.current.click();
+                setForm(initialStateForm)
+                setLoading(false)
+                fetchListProduct(userdata.id, token)
+            }
+        } else {
+            const res = await editProduct(form, token)
+            if (res.status) {
+                successAlert()
+                modal.current.click();
+                setForm(initialStateForm)
+                setLoading(false)
+                fetchListProduct(userdata.id, token)
+            } else {
+                failedAlert()
+                modal.current.click();
+                setForm(initialStateForm)
+                setLoading(false)
+                fetchListProduct(userdata.id, token)
+            }
+        }
+    }
+
+    async function handleDelete(id) {
+        let token = getToken();
+        const userdata = jwtDecode(token)
+        const res = await deleteProduct(id, token)
+        if (res.status) {
+            successAlert()
+            fetchListProduct(userdata.id, token)
+        } else {
+            failedAlert()
+            fetchListProduct(userdata.id, token)
+        }
+    }
+
+    function showDetail(id) {
+        const filteredData = list.filter(item => item._id == id);
+        setForm(filteredData[0])
+    }
+
     return (
         <Fragment>
             {!authenticated ? null :
@@ -24,30 +124,9 @@ export default function Proucts() {
                             <div className="az-content-body">
                                 <h2 className="az-dashboard-title mb-4">List of Products.</h2>
                                 <div className="row">
-                                    <div className="col-lg-2 mb-3">
-                                        <label className="mg-b-10">Month</label>
-                                        <select className="form-control select2-no-search">
-                                            <option label="All" />
-                                            <option value="1">January</option>
-                                            <option value="2">February</option>
-                                            <option value="3">March</option>
-                                            <option value="4">April</option>
-                                            <option value="5">May</option>
-                                            <option value="6">June</option>
-                                            <option value="7">July</option>
-                                            <option value="8">August</option>
-                                            <option value="9">September</option>
-                                            <option value="10">October</option>
-                                            <option value="11">November</option>
-                                            <option value="12">December</option>
-                                        </select>
-                                    </div>
-                                    <div className="col-lg-2 mb-3">
-                                        <label className="mg-b-10">Years</label>
-                                        <input className="form-control" />
-                                    </div>
-                                    <div className="col-lg-12 mt-4">
-                                        <button className="btn btn-indigo btn-with-icon mb-4" data-toggle="modal" data-target="#products-modal">
+                                    <div className="col-lg-12 mt-2">
+                                        <button className="btn btn-indigo btn-with-icon mb-4" data-toggle="modal" data-target="#products-modal"
+                                            onClick={() => setIsEdit(false)}>
                                             <i className="typcn typcn-document-text" /> Add Product
                                         </button>
                                         <div className="table-responsive mt-1">
@@ -57,30 +136,37 @@ export default function Proucts() {
                                                         <th>Num</th>
                                                         <th>ID Transaction</th>
                                                         <th>Product Name</th>
-                                                        <th>Description</th>
                                                         <th>Stock Keeping Unit</th>
                                                         <th>Batch Code</th>
                                                         <th>Option</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr>
-                                                        <th scope="row">1</th>
-                                                        <td>WASKLAKSAS13</td>
-                                                        <td>Tiger Nixon</td>
-                                                        <td>System Architect</td>
-                                                        <td>0</td>
-                                                        <td>
-                                                            <span className="badge badge-pill badge-dark">XX0X0</span>
-                                                        </td>
-                                                        <td>
-                                                            <button data-toggle="dropdown" className="btn btn-indigo btn-sm">Option <i className="icon ion-ios-arrow-down tx-11 mg-l-3" /></button>
-                                                            <div className="dropdown-menu">
-                                                                <a href="#" className="dropdown-item">Update</a>
-                                                                <a href="#" className="dropdown-item">Delete</a>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
+                                                    {list.map((x, i) => {
+                                                        return (
+                                                            <tr key={i}>
+                                                                <th scope="row">{i + 1}</th>
+                                                                <td>{x.id_trx}</td>
+                                                                <td>{x.products_name}</td>
+                                                                <td>{x.sku}</td>
+                                                                <td>
+                                                                    <span className="badge badge-pill badge-dark">{x.batch_code}</span>
+                                                                </td>
+                                                                <td>
+                                                                    <button data-toggle="dropdown" className="btn btn-indigo btn-sm">Option <i className="icon ion-ios-arrow-down tx-11 mg-l-3" /></button>
+                                                                    <div className="dropdown-menu">
+                                                                        <a href="#" className="dropdown-item" data-toggle="modal" data-target="#products-modal"
+                                                                            onClick={() => {
+                                                                                showDetail(x._id);
+                                                                                setIsEdit(true);
+                                                                            }}
+                                                                        >Update</a>
+                                                                        <a href="#" className="dropdown-item" onClick={() => handleDelete(x._id)}>Delete</a>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    })}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -96,43 +182,59 @@ export default function Proucts() {
                             <div className="modal-content">
                                 <div className="modal-header">
                                     <h5 className="modal-title" id="exampleModalLabel">Products Form</h5>
-                                    <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                                    <button type="button" className="close" data-dismiss="modal" aria-label="Close" ref={modal}>
                                         <span aria-hidden="true">×</span>
                                     </button>
                                 </div>
-                                <div className="modal-body">
-                                    <form>
+                                <form onSubmit={postProduct}>
+                                    <div className="modal-body">
                                         <div className="row">
                                             <div className="col-lg-12">
                                                 <div className="form-group">
                                                     <label className="col-form-label">Product Name:</label>
-                                                    <input type="text" className="form-control" />
+                                                    <input type="text" className="form-control" name="products_name"
+                                                        onChange={formHandler}
+                                                        value={form.products_name}
+                                                        disabled={loading}
+                                                        required />
                                                 </div>
                                             </div>
                                             <div className="col-lg-12">
                                                 <div className="form-group">
                                                     <label className="col-form-label">Description:</label>
-                                                    <textarea className="form-control" />
+                                                    <textarea className="form-control" name="description"
+                                                        onChange={formHandler}
+                                                        value={form.description}
+                                                        disabled={loading}
+                                                    />
                                                 </div>
                                             </div>
                                             <div className="col-lg-6">
                                                 <div className="form-group">
                                                     <label className="col-form-label">Stock Keeping Unit:</label>
-                                                    <input type="text" className="form-control" />
+                                                    <input type="number" className="form-control" name="sku"
+                                                        onChange={formHandler}
+                                                        value={form.sku}
+                                                        disabled={loading}
+                                                        required />
                                                 </div>
                                             </div>
                                             <div className="col-lg-6">
                                                 <div className="form-group">
                                                     <label className="col-form-label">Batch Code:</label>
-                                                    <input type="text" className="form-control" />
+                                                    <input type="text" className="form-control" name="batch_code"
+                                                        onChange={formHandler}
+                                                        value={form.batch_code}
+                                                        disabled={loading}
+                                                        required />
                                                 </div>
                                             </div>
                                         </div>
-                                    </form>
-                                </div>
-                                <div className="modal-footer">
-                                    <button type="button" className="btn btn-indigo">Save</button>
-                                </div>
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button type="submit" className="btn btn-indigo" disabled={loading}>{loading ? "Loading.." : "Save"}</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
