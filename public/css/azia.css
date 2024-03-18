@@ -11393,7 +11393,7 @@ a.text-dark:focus {
 }
 
 .nav-link.active {
-  color: #3366ff!important;
+  color: #3366ff !important;
 }
 
 .nav-pills .nav-link.active {
@@ -62650,7 +62650,7 @@ body {
 }
 
 .custom-card {
-  border-radius: 15px; 
+  border-radius: 15px;
   width: 100%;
   padding: 30px;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
@@ -62660,4 +62660,37 @@ body {
   display: block;
   margin: auto;
   width: 260px;
+}
+
+.loader {
+  border: 7px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 7px solid #121935;
+  width: 60px;
+  height: 60px;
+  -webkit-animation: spin 2s linear infinite;
+  /* Safari */
+  animation: spin 2s linear infinite;
+  margin: auto;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }

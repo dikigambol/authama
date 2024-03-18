@@ -4,6 +4,8 @@ import { addProduct, deleteProduct, editProduct, isAuth, listProducts } from "@/
 import { getToken } from "@/utils/configToken";
 import { jwtDecode } from "jwt-decode";
 import { failedAlert, successAlert } from "@/utils/alertSwal";
+import QRCode from "react-qr-code";
+import ProductTable from "@/components/product/table";
 
 const today = new Date();
 // random string hanya sementara sampai api blockchain ready 
@@ -24,20 +26,44 @@ export default function Proucts() {
     const [form, setForm] = useState(initialStateForm)
     const [authenticated, setAuthenticated] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [listLoading, setListLoading] = useState(false)
     const [isEdit, setIsEdit] = useState(false)
+    const [baseUrl, setBaseUrl] = useState('');
 
     const modal = useRef(null)
 
+    const generateQRCode = (id, product_name) => {
+        const svg = document.getElementById(id);
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const img = new Image();
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            const pngFile = canvas.toDataURL("image/png");
+            const downloadLink = document.createElement("a");
+            downloadLink.download = product_name;
+            downloadLink.href = `${pngFile}`;
+            downloadLink.click();
+        };
+        img.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
+    };
+
     async function fetchListProduct(id, token) {
+        setListLoading(true)
         const res = await listProducts(id, token)
         if (res) {
             setList(res)
+            setListLoading(false)
         }
     }
 
     useEffect(() => {
         let token = getToken();
         const userdata = jwtDecode(token)
+        const url = window.location.origin;
         async function checkAuth() {
             const res = await isAuth(token);
             setAuthenticated(res);
@@ -48,6 +74,7 @@ export default function Proucts() {
             ...form,
             id_writer: userdata.id
         })
+        setBaseUrl(url);
     }, []);
 
     function formHandler(e) {
@@ -113,6 +140,33 @@ export default function Proucts() {
         setForm(filteredData[0])
     }
 
+    const columns = [
+        {
+            Header: 'Num',
+            accessor: 'num',
+        },
+        {
+            Header: 'Transaction ID',
+            accessor: 'id_trx',
+        },
+        {
+            Header: 'Product Name',
+            accessor: 'products_name',
+        },
+        {
+            Header: 'Stock Keeping Unit',
+            accessor: 'sku',
+        },
+        {
+            Header: 'Batch Code',
+            accessor: 'batch_code',
+        },
+        {
+            Header: 'Option',
+            accessor: 'actions',
+        },
+    ]
+
     return (
         <Fragment>
             {!authenticated ? null :
@@ -125,50 +179,19 @@ export default function Proucts() {
                                 <div className="row">
                                     <div className="col-lg-12 mt-2">
                                         <button className="btn btn-indigo btn-with-icon mb-4" data-toggle="modal" data-target="#products-modal"
-                                            onClick={() => setIsEdit(false)}>
+                                            onClick={() => setIsEdit(false)} disabled={listLoading}>
                                             <i className="typcn typcn-document-text" /> Add Product
                                         </button>
-                                        <div className="table-responsive mt-1">
-                                            <table className="table table-hover mg-b-0">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Num</th>
-                                                        <th>ID Transaction</th>
-                                                        <th>Product Name</th>
-                                                        <th>Stock Keeping Unit</th>
-                                                        <th>Batch Code</th>
-                                                        <th>Option</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {list.map((x, i) => {
-                                                        return (
-                                                            <tr key={i}>
-                                                                <th scope="row">{i + 1}</th>
-                                                                <td>{x.id_trx}</td>
-                                                                <td>{x.products_name}</td>
-                                                                <td>{x.sku}</td>
-                                                                <td>
-                                                                    <span className="badge badge-pill badge-dark">{x.batch_code}</span>
-                                                                </td>
-                                                                <td>
-                                                                    <button data-toggle="dropdown" className="btn btn-indigo btn-sm">Option <i className="icon ion-ios-arrow-down tx-11 mg-l-3" /></button>
-                                                                    <div className="dropdown-menu">
-                                                                        <a href="#" className="dropdown-item" data-toggle="modal" data-target="#products-modal"
-                                                                            onClick={() => {
-                                                                                showDetail(x._id);
-                                                                                setIsEdit(true);
-                                                                            }}
-                                                                        >Update</a>
-                                                                        <a href="#" className="dropdown-item" onClick={() => handleDelete(x._id)}>Delete</a>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        )
-                                                    })}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                        <ProductTable
+                                            columns={columns}
+                                            data={list}
+                                            baseUrl={baseUrl}
+                                            listLoading={listLoading}
+                                            setIsEdit={setIsEdit}
+                                            showDetail={showDetail}
+                                            handleDelete={handleDelete}
+                                            generateQRCode={generateQRCode}
+                                        />
                                     </div>
                                 </div>
                             </div>

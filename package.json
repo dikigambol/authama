@@ -19,6 +19,8 @@
     "next-connect": "^1.0.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-qr-code": "^2.0.12",
+    "react-table": "^7.8.0",
     "sweetalert2": "^11.10.6"
   }
 }
